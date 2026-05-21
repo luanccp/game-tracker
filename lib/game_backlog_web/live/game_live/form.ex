@@ -23,7 +23,6 @@ defmodule GameBacklogWeb.GameLive.Form do
           options={Ecto.Enum.values(GameBacklog.Backlog.Game, :status) |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})}
         />
         <.input field={@form[:genre]} type="text" label="Genre" />
-        <.input field={@form[:rating]} type="number" label="Rating" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Game</.button>
