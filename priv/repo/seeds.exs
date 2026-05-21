@@ -1,11 +1,5 @@
-# Script for populating the database. You can run it as:
-#
-#     mix run priv/repo/seeds.exs
-#
-# Inside the script, you can read and write to any of your
-# repositories directly:
-#
-#     GameBacklog.Repo.insert!(%GameBacklog.SomeSchema{})
-#
-# We recommend using the bang functions (`insert!`, `update!`
-# and so on) as they will fail if something goes wrong.
+alias GameBacklog.Backlog
+
+for genre <- ~w(Action Adventure RPG Strategy Simulation Sports Puzzle Racing Horror) do
+  Backlog.create_genre(%{description: genre})
+end
