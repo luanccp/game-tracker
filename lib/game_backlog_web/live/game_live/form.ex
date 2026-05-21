@@ -27,7 +27,7 @@ defmodule GameBacklogWeb.GameLive.Form do
         />
         <.input field={@form[:genre]} type="text" label="Genre" />
         <%= if Ecto.Changeset.get_field(@form.source, :status) == :completed do %>
-          <.input field={@form[:rating]} type="number" label="Rating" />
+          <.input field={@form[:rating]} type="number" label="Rating" min="1" max="10" />
         <% end %>
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <footer>
