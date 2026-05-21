@@ -25,11 +25,9 @@ defmodule GameBacklogWeb.Router do
     live "/games/:id/edit", GameLive.Form, :edit
   end
 
-
   scope "/api", GameBacklogWeb do
     pipe_through :api
 
     get "/healthz", HealthzController, :index
   end
-
 end
