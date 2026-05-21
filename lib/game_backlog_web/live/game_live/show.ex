@@ -24,7 +24,7 @@ defmodule GameBacklogWeb.GameLive.Show do
         <:item title="Title">{@game.title}</:item>
         <:item title="Platform">{@game.platform}</:item>
         <:item title="Status">{@game.status}</:item>
-        <:item title="Genre">{@game.genre.description}</:item>
+        <:item title="Genre">{@game.genre && @game.genre.description}</:item>
         <:item title="Rating">{@game.rating}</:item>
         <:item title="Notes">{@game.notes}</:item>
       </.list>

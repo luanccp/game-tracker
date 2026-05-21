@@ -24,7 +24,7 @@ defmodule GameBacklogWeb.GameLive.Index do
         <:col :let={{_id, game}} label="Title">{game.title}</:col>
         <:col :let={{_id, game}} label="Platform">{game.platform}</:col>
         <:col :let={{_id, game}} label="Status">{game.status}</:col>
-        <:col :let={{_id, game}} label="Genre">{game.genre.description}</:col>
+        <:col :let={{_id, game}} label="Genre">{game.genre && game.genre.description}</:col>
         <:col :let={{_id, game}} label="Rating">{game.rating}</:col>
         <:col :let={{_id, game}} label="Notes">{game.notes}</:col>
         <:action :let={{_id, game}}>
