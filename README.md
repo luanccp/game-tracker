@@ -41,7 +41,7 @@ docker run --name game-backlog-postgres \
 ## Getting started
 
 ```bash
-mix setup          # install deps, create DB, run migrations
+mix setup          # install deps, create DB, run migrations, and seeds
 mix phx.server     # start the app at http://localhost:4000
 ```
 
