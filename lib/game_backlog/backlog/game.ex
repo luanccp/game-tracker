@@ -6,7 +6,7 @@ defmodule GameBacklog.Backlog.Game do
     field :title, :string
     field :platform, :string
     field :status, Ecto.Enum, values: [:backlog, :playing, :completed, :dropped]
-    field :genre, :string
+    belongs_to :genre, GameBacklog.Backlog.Genre
     field :rating, :integer
     field :notes, :string
 
@@ -16,8 +16,8 @@ defmodule GameBacklog.Backlog.Game do
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:title, :platform, :status, :genre, :rating, :notes])
-    |> validate_required([:title, :platform, :status, :genre])
+    |> cast(attrs, [:title, :platform, :status, :genre_id, :rating, :notes])
+    |> validate_required([:title, :platform, :status, :genre_id])
     |> validate_rating()
   end
 

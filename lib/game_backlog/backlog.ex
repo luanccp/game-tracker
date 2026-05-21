@@ -7,6 +7,7 @@ defmodule GameBacklog.Backlog do
   alias GameBacklog.Repo
 
   alias GameBacklog.Backlog.Game
+  alias GameBacklog.Backlog.Genre
 
   @doc """
   Returns the list of games.
@@ -18,7 +19,7 @@ defmodule GameBacklog.Backlog do
 
   """
   def list_games do
-    Repo.all(Game)
+    Repo.all(from g in Game, preload: [:genre])
   end
 
   @doc """
@@ -35,7 +36,7 @@ defmodule GameBacklog.Backlog do
       ** (Ecto.NoResultsError)
 
   """
-  def get_game!(id), do: Repo.get!(Game, id)
+  def get_game!(id), do: Repo.get!(Game, id) |> Repo.preload(:genre)
 
   @doc """
   Creates a game.
@@ -100,5 +101,31 @@ defmodule GameBacklog.Backlog do
   """
   def change_game(%Game{} = game, attrs \\ %{}) do
     Game.changeset(game, attrs)
+  end
+
+  @doc """
+  Returns the list of genres.
+  """
+  def list_genres do
+    Repo.all(from g in Genre, order_by: g.description)
+  end
+
+  @doc """
+  Creates a genre.
+  """
+  def create_genre(attrs) do
+    %Genre{}
+    |> Genre.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Creates a genre if it doesn't exist.
+  """
+  def get_or_create_genre(description) do
+    case Repo.get_by(Genre, description: description) do
+      nil -> create_genre(%{description: description})
+      genre -> {:ok, genre}
+    end
   end
 end
