@@ -31,14 +31,16 @@ defmodule GameBacklogWeb.GameLive.Index do
           <div class="sr-only">
             <.link navigate={~p"/games/#{game}"}>Show</.link>
           </div>
-          <.link navigate={~p"/games/#{game}/edit"}>Edit</.link>
+          <.link navigate={~p"/games/#{game}/edit"}>
+            <.icon name="hero-pencil" class="w-5 h-5" />
+          </.link>
         </:action>
         <:action :let={{id, game}}>
           <.link
             phx-click={JS.push("delete", value: %{id: game.id}) |> hide("##{id}")}
             data-confirm="Are you sure?"
           >
-            Delete
+            <.icon name="hero-trash" class="w-5 h-5" />
           </.link>
         </:action>
       </.table>
