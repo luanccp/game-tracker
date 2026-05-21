@@ -1,8 +1,34 @@
 # GameBacklog
 
+A personal video game backlog tracker built with Phoenix LiveView. Track the games you're playing, finished, or want to play next.
+
+## Features
+
+- Full CRUD for managing your game collection
+- Track title, platform, genre, status, rating, and notes
+- Game status workflow: **Backlog** → **Playing** → **Completed** / **Dropped**
+- Rating (1–10) required only for completed games
+- Real-time form validation with LiveView
+- Light / dark / system theme toggle
+- Health check endpoint at `GET /api/healthz`
+
+## Tech stack
+
+- [Elixir](https://elixir-lang.org/) ~> 1.15
+- [Phoenix](https://www.phoenixframework.org/) 1.8 with LiveView
+- [PostgreSQL](https://www.postgresql.org/) via Ecto
+- [Tailwind CSS](https://tailwindcss.com/) v4
+
 ## Prerequisites
 
-This project requires PostgreSQL. The easiest way to run it locally is with Docker:
+- Elixir and Erlang installed (see `.tool-versions` or `elixir_buildpack.config`)
+- PostgreSQL running locally — the easiest way is with Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Or with a standalone container:
 
 ```bash
 docker run --name game-backlog-postgres \
@@ -12,25 +38,34 @@ docker run --name game-backlog-postgres \
   -d postgres
 ```
 
-Useful container commands:
-
-* **Stop:** `docker stop game-backlog-postgres`
-* **Start again:** `docker start game-backlog-postgres`
-* **Remove:** `docker rm -f game-backlog-postgres`
-
 ## Getting started
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+```bash
+mix setup          # install deps, create DB, run migrations
+mix phx.server     # start the app at http://localhost:4000
+```
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Or run inside IEx:
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+```bash
+iex -S mix phx.server
+```
 
-## Learn more
+## Useful commands
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://hexdocs.pm/phoenix/overview.html
-* Docs: https://hexdocs.pm/phoenix
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+| Command | Description |
+|---------|-------------|
+| `mix test` | Run the test suite |
+| `mix precommit` | Compile (warnings-as-errors), format, and test |
+| `mix ecto.reset` | Drop, recreate, migrate, and seed the database |
+
+## Production
+
+The app reads configuration from environment variables at runtime:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `SECRET_KEY_BASE` | Yes | Phoenix secret (generate with `mix phx.gen.secret`) |
+| `PHX_HOST` | No | Hostname for URL generation |
+| `PORT` | No | HTTP port (default 4000) |
