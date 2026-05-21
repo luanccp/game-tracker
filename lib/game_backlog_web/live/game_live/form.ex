@@ -20,9 +20,15 @@ defmodule GameBacklogWeb.GameLive.Form do
           field={@form[:status]}
           type="select"
           label="Status"
-          options={Ecto.Enum.values(GameBacklog.Backlog.Game, :status) |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})}
+          options={
+            Ecto.Enum.values(GameBacklog.Backlog.Game, :status)
+            |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})
+          }
         />
         <.input field={@form[:genre]} type="text" label="Genre" />
+        <%= if Ecto.Changeset.get_field(@form.source, :status) == :completed do %>
+          <.input field={@form[:rating]} type="number" label="Rating" />
+        <% end %>
         <.input field={@form[:notes]} type="textarea" label="Notes" />
         <footer>
           <.button phx-disable-with="Saving..." variant="primary">Save Game</.button>
