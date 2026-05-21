@@ -5,7 +5,7 @@ defmodule GameBacklog.Backlog.Game do
   schema "games" do
     field :title, :string
     field :platform, :string
-    field :status, :string
+    field :status, Ecto.Enum, values: [:backlog, :playing, :completed, :dropped]
     field :genre, :string
     field :rating, :integer
     field :notes, :string

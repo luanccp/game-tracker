@@ -16,7 +16,12 @@ defmodule GameBacklogWeb.GameLive.Form do
       <.form for={@form} id="game-form" phx-change="validate" phx-submit="save">
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:platform]} type="text" label="Platform" />
-        <.input field={@form[:status]} type="text" label="Status" />
+        <.input
+          field={@form[:status]}
+          type="select"
+          label="Status"
+          options={Ecto.Enum.values(GameBacklog.Backlog.Game, :status) |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})}
+        />
         <.input field={@form[:genre]} type="text" label="Genre" />
         <.input field={@form[:rating]} type="number" label="Rating" />
         <.input field={@form[:notes]} type="textarea" label="Notes" />
