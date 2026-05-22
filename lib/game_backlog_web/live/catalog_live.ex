@@ -21,7 +21,10 @@ defmodule GameBacklogWeb.CatalogLive do
         <% else %>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <%= for game <- @catalog_games do %>
-              <div class="group rounded-xl border border-base-300 bg-base-100 shadow-sm hover:shadow-md transition overflow-hidden">
+              <.link
+                navigate={~p"/catalog/#{game}"}
+                class="group block rounded-xl border border-base-300 bg-base-100 shadow-sm hover:shadow-md transition overflow-hidden"
+              >
                 <%= if game.image_url do %>
                   <div class="aspect-square overflow-hidden bg-base-200">
                     <img
@@ -44,7 +47,7 @@ defmodule GameBacklogWeb.CatalogLive do
                     <p class="mt-2 text-sm text-base-content/60 line-clamp-3">{game.description}</p>
                   <% end %>
                 </div>
-              </div>
+              </.link>
             <% end %>
           </div>
         <% end %>

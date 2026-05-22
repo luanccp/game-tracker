@@ -37,7 +37,7 @@ defmodule GameBacklogWeb.Layouts do
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
-        <.link navigate="/" class="btn btn-ghost">
+        <.link navigate="/games" class="btn btn-ghost">
           <.icon name="hero-queue-list" class="w-4 h-4" /> My list
         </.link>
       </div>
