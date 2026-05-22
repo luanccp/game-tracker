@@ -44,6 +44,11 @@ defmodule GameBacklogWeb.Layouts do
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
+            <.link navigate="/catalog" class="btn btn-ghost">
+              <.icon name="hero-book-open" class="w-4 h-4" /> Catalog
+            </.link>
+          </li>
+          <li>
             <.link navigate="/leaderboard" class="btn btn-ghost">
               <.icon name="hero-trophy" class="w-4 h-4" /> Leaderboard
             </.link>

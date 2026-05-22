@@ -24,6 +24,7 @@ defmodule GameBacklogWeb.Router do
     live "/games/:id", GameLive.Show, :show
     live "/games/:id/edit", GameLive.Form, :edit
 
+    live "/catalog", CatalogLive, :index
     live "/leaderboard", LeaderboardLive, :index
   end
 

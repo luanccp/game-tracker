@@ -131,6 +131,13 @@ defmodule GameBacklog.Backlog do
   end
 
   @doc """
+  Returns all catalog games ordered by title.
+  """
+  def list_catalog_games do
+    Repo.all(from cg in CatalogGame, order_by: cg.title, preload: [:genre])
+  end
+
+  @doc """
   Searches catalog games by title.
   """
   def search_catalog_games(query) when is_binary(query) and byte_size(query) > 0 do
