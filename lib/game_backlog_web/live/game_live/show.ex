@@ -20,11 +20,24 @@ defmodule GameBacklogWeb.GameLive.Show do
         </:actions>
       </.header>
 
+      <%= if @game.catalog_game && @game.catalog_game.image_url do %>
+        <div class="flex justify-center my-4">
+          <img
+            src={@game.catalog_game.image_url}
+            alt={@game.catalog_game.title}
+            class="w-48 h-48 rounded-lg object-cover shadow-md"
+          />
+        </div>
+      <% end %>
+
       <.list>
-        <:item title="Title">{@game.title}</:item>
+        <:item title="Title">{@game.catalog_game && @game.catalog_game.title}</:item>
         <:item title="Platform">{@game.platform}</:item>
         <:item title="Status">{@game.status}</:item>
-        <:item title="Genre">{@game.genre && @game.genre.description}</:item>
+        <:item title="Genre">
+          {@game.catalog_game && @game.catalog_game.genre && @game.catalog_game.genre.description}
+        </:item>
+        <:item title="Description">{@game.catalog_game && @game.catalog_game.description}</:item>
         <:item title="Rating">{@game.rating}</:item>
         <:item title="Views">{@view_count}</:item>
         <:item title="Notes">{@game.notes}</:item>

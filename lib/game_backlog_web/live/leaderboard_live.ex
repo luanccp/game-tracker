@@ -52,11 +52,14 @@ defmodule GameBacklogWeb.LeaderboardLive do
                   </td>
                   <td>
                     <.link navigate={~p"/games/#{entry.game}"} class="link link-hover font-semibold">
-                      {entry.game.title}
+                      {entry.game.catalog_game && entry.game.catalog_game.title}
                     </.link>
                   </td>
                   <td>{entry.game.platform}</td>
-                  <td>{entry.game.genre && entry.game.genre.description}</td>
+                  <td>
+                    {entry.game.catalog_game && entry.game.catalog_game.genre &&
+                      entry.game.catalog_game.genre.description}
+                  </td>
                   <td class="text-right font-mono text-lg">{entry.view_count}</td>
                 </tr>
               <% end %>

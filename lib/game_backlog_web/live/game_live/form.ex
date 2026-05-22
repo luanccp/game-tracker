@@ -14,7 +14,74 @@ defmodule GameBacklogWeb.GameLive.Form do
       </.header>
 
       <.form for={@form} id="game-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:title]} type="text" label="Title" />
+        <div class="relative">
+          <label class="block text-sm font-semibold leading-6 text-base-content" for="catalog-search">
+            Game
+          </label>
+          <%= if @selected_catalog_game do %>
+            <div class="flex items-center gap-3 mt-2 p-3 rounded-lg border border-base-300 bg-base-200">
+              <%= if @selected_catalog_game.image_url do %>
+                <img
+                  src={@selected_catalog_game.image_url}
+                  alt={@selected_catalog_game.title}
+                  class="w-12 h-12 rounded object-cover"
+                />
+              <% end %>
+              <div class="flex-1">
+                <p class="font-semibold">{@selected_catalog_game.title}</p>
+                <p class="text-sm text-base-content/60">
+                  {if @selected_catalog_game.genre, do: @selected_catalog_game.genre.description}
+                </p>
+              </div>
+              <button type="button" phx-click="clear_catalog_game" class="btn btn-ghost btn-sm">
+                <.icon name="hero-x-mark" class="w-4 h-4" />
+              </button>
+            </div>
+            <input type="hidden" name="game[catalog_game_id]" value={@selected_catalog_game.id} />
+          <% else %>
+            <input
+              type="text"
+              id="catalog-search"
+              name="search_query"
+              value={@search_query}
+              placeholder="Search for a game..."
+              phx-change="search_catalog"
+              phx-debounce="300"
+              autocomplete="off"
+              class="mt-2 block w-full rounded-lg text-base-content focus:ring-0 sm:text-sm sm:leading-6 border-base-content/30 bg-base-100 focus:border-primary"
+            />
+            <%= if @catalog_results != [] do %>
+              <ul class="absolute z-10 mt-1 w-full rounded-lg border border-base-300 bg-base-100 shadow-lg max-h-60 overflow-auto">
+                <%= for game <- @catalog_results do %>
+                  <li
+                    phx-click="select_catalog_game"
+                    phx-value-id={game.id}
+                    class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-base-200 transition"
+                  >
+                    <%= if game.image_url do %>
+                      <img
+                        src={game.image_url}
+                        alt={game.title}
+                        class="w-10 h-10 rounded object-cover"
+                      />
+                    <% else %>
+                      <div class="w-10 h-10 rounded bg-base-300 flex items-center justify-center">
+                        <.icon name="hero-photo" class="w-5 h-5 opacity-40" />
+                      </div>
+                    <% end %>
+                    <div>
+                      <p class="font-semibold text-sm">{game.title}</p>
+                      <p class="text-xs text-base-content/60">
+                        {if game.genre, do: game.genre.description}
+                      </p>
+                    </div>
+                  </li>
+                <% end %>
+              </ul>
+            <% end %>
+          <% end %>
+        </div>
+
         <.input field={@form[:platform]} type="text" label="Platform" />
         <.input
           field={@form[:status]}
@@ -25,21 +92,6 @@ defmodule GameBacklogWeb.GameLive.Form do
             |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})
           }
         />
-        <.input
-          field={@form[:genre_id]}
-          type="select"
-          label="Genre"
-          prompt="Select a genre"
-          options={Enum.map(@genres, &{&1.description, &1.id}) ++ [{"Other", "other"}]}
-        />
-        <%= if @custom_genre do %>
-          <.input
-            field={@form[:new_genre]}
-            type="text"
-            label="New genre"
-            placeholder="Enter a new genre"
-          />
-        <% end %>
         <%= if Ecto.Changeset.get_field(@form.source, :status) == :completed do %>
           <.input field={@form[:rating]} type="number" label="Rating" min="1" max="10" />
         <% end %>
@@ -70,8 +122,9 @@ defmodule GameBacklogWeb.GameLive.Form do
     socket
     |> assign(:page_title, "Edit Game")
     |> assign(:game, game)
-    |> assign(:genres, Backlog.list_genres())
-    |> assign(:custom_genre, false)
+    |> assign(:search_query, "")
+    |> assign(:catalog_results, [])
+    |> assign(:selected_catalog_game, game.catalog_game)
     |> assign(:form, to_form(Backlog.change_game(game)))
   end
 
@@ -81,83 +134,94 @@ defmodule GameBacklogWeb.GameLive.Form do
     socket
     |> assign(:page_title, "New Game")
     |> assign(:game, game)
-    |> assign(:genres, Backlog.list_genres())
-    |> assign(:custom_genre, false)
+    |> assign(:search_query, "")
+    |> assign(:catalog_results, [])
+    |> assign(:selected_catalog_game, nil)
     |> assign(:form, to_form(Backlog.change_game(game)))
   end
 
   @impl true
-  def handle_event("validate", %{"game" => game_params}, socket) do
-    custom_genre = game_params["genre_id"] == "other"
-    changeset = Backlog.change_game(socket.assigns.game, game_params)
+  def handle_event("search_catalog", %{"search_query" => query}, socket) do
+    results = Backlog.search_catalog_games(query)
+    {:noreply, assign(socket, search_query: query, catalog_results: results)}
+  end
+
+  def handle_event("select_catalog_game", %{"id" => id}, socket) do
+    catalog_game = Backlog.get_catalog_game!(id)
+
+    changeset =
+      Backlog.change_game(socket.assigns.game, %{
+        "catalog_game_id" => catalog_game.id
+      })
 
     {:noreply,
      socket
-     |> assign(:custom_genre, custom_genre)
-     |> assign(form: to_form(changeset, action: :validate))}
+     |> assign(:selected_catalog_game, catalog_game)
+     |> assign(:search_query, "")
+     |> assign(:catalog_results, [])
+     |> assign(:form, to_form(changeset))}
+  end
+
+  def handle_event("clear_catalog_game", _params, socket) do
+    changeset =
+      Backlog.change_game(socket.assigns.game, %{"catalog_game_id" => nil})
+
+    {:noreply,
+     socket
+     |> assign(:selected_catalog_game, nil)
+     |> assign(:search_query, "")
+     |> assign(:catalog_results, [])
+     |> assign(:form, to_form(changeset))}
+  end
+
+  def handle_event("validate", %{"game" => game_params}, socket) do
+    game_params =
+      if socket.assigns.selected_catalog_game do
+        Map.put(game_params, "catalog_game_id", socket.assigns.selected_catalog_game.id)
+      else
+        game_params
+      end
+
+    changeset = Backlog.change_game(socket.assigns.game, game_params)
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
   def handle_event("save", %{"game" => game_params}, socket) do
+    game_params =
+      if socket.assigns.selected_catalog_game do
+        Map.put(game_params, "catalog_game_id", socket.assigns.selected_catalog_game.id)
+      else
+        game_params
+      end
+
     save_game(socket, socket.assigns.live_action, game_params)
   end
 
   defp save_game(socket, :edit, game_params) do
-    case maybe_resolve_genre(game_params) do
-      {:ok, resolved_params} ->
-        case Backlog.update_game(socket.assigns.game, resolved_params) do
-          {:ok, game} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Game updated successfully")
-             |> push_navigate(to: return_path(socket.assigns.return_to, game))}
+    case Backlog.update_game(socket.assigns.game, game_params) do
+      {:ok, game} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Game updated successfully")
+         |> push_navigate(to: return_path(socket.assigns.return_to, game))}
 
-          {:error, %Ecto.Changeset{} = changeset} ->
-            {:noreply, assign(socket, form: to_form(changeset))}
-        end
-
-      {:error, :blank_genre} ->
-        {:noreply, put_flash(socket, :error, "Please enter a genre name")}
-
-      {:error, :invalid_genre} ->
-        {:noreply, put_flash(socket, :error, "Invalid genre")}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 
   defp save_game(socket, :new, game_params) do
-    case maybe_resolve_genre(game_params) do
-      {:ok, resolved_params} ->
-        case Backlog.create_game(resolved_params) do
-          {:ok, game} ->
-            {:noreply,
-             socket
-             |> put_flash(:info, "Game created successfully")
-             |> push_navigate(to: return_path(socket.assigns.return_to, game))}
+    case Backlog.create_game(game_params) do
+      {:ok, game} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Game created successfully")
+         |> push_navigate(to: return_path(socket.assigns.return_to, game))}
 
-          {:error, %Ecto.Changeset{} = changeset} ->
-            {:noreply, assign(socket, form: to_form(changeset))}
-        end
-
-      {:error, :blank_genre} ->
-        {:noreply, put_flash(socket, :error, "Please enter a genre name")}
-
-      {:error, :invalid_genre} ->
-        {:noreply, put_flash(socket, :error, "Invalid genre")}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp maybe_resolve_genre(%{"genre_id" => "other", "new_genre" => desc} = params)
-       when desc != "" do
-    case Backlog.get_or_create_genre(desc) do
-      {:ok, genre} -> {:ok, Map.put(params, "genre_id", genre.id)}
-      {:error, _} -> {:error, :invalid_genre}
-    end
-  end
-
-  defp maybe_resolve_genre(%{"genre_id" => "other"}) do
-    {:error, :blank_genre}
-  end
-
-  defp maybe_resolve_genre(params), do: {:ok, params}
 
   defp return_path("index", _game), do: ~p"/games"
   defp return_path("show", game), do: ~p"/games/#{game}"

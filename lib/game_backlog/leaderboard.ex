@@ -96,7 +96,7 @@ defmodule GameBacklog.Leaderboard do
       |> Enum.map(fn {id, _count} -> id end)
 
     games =
-      Repo.all(from g in Game, where: g.id in ^game_ids, preload: [:genre])
+      Repo.all(from g in Game, where: g.id in ^game_ids, preload: [catalog_game: [:genre]])
       |> Map.new(&{&1.id, &1})
 
     counts

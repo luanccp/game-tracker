@@ -21,10 +21,12 @@ defmodule GameBacklogWeb.GameLive.Index do
         rows={@streams.games}
         row_click={fn {_id, game} -> JS.navigate(~p"/games/#{game}") end}
       >
-        <:col :let={{_id, game}} label="Title">{game.title}</:col>
+        <:col :let={{_id, game}} label="Title">{game.catalog_game && game.catalog_game.title}</:col>
         <:col :let={{_id, game}} label="Platform">{game.platform}</:col>
         <:col :let={{_id, game}} label="Status">{game.status}</:col>
-        <:col :let={{_id, game}} label="Genre">{game.genre && game.genre.description}</:col>
+        <:col :let={{_id, game}} label="Genre">
+          {game.catalog_game && game.catalog_game.genre && game.catalog_game.genre.description}
+        </:col>
         <:col :let={{_id, game}} label="Rating">{game.rating}</:col>
         <:col :let={{_id, game}} label="Notes">{game.notes}</:col>
         <:action :let={{_id, game}}>
