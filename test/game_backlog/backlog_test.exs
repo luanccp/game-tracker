@@ -8,7 +8,7 @@ defmodule GameBacklog.BacklogTest do
 
     import GameBacklog.BacklogFixtures
 
-    @invalid_attrs %{genre: nil, notes: nil, platform: nil, rating: nil, status: nil, title: nil}
+    @invalid_attrs %{notes: nil, platform: nil, status: nil, catalog_game_id: nil}
 
     test "list_games/0 returns all games" do
       game = game_fixture()
@@ -21,15 +21,20 @@ defmodule GameBacklog.BacklogTest do
     end
 
     test "create_game/1 with valid data creates a game" do
-      valid_attrs = %{genre: "some genre", notes: "some notes", platform: "some platform", rating: 42, status: "some status", title: "some title"}
+      catalog_game = catalog_game_fixture()
+
+      valid_attrs = %{
+        notes: "some notes",
+        platform: "some platform",
+        status: "backlog",
+        catalog_game_id: catalog_game.id
+      }
 
       assert {:ok, %Game{} = game} = Backlog.create_game(valid_attrs)
-      assert game.genre == "some genre"
       assert game.notes == "some notes"
       assert game.platform == "some platform"
-      assert game.rating == 42
-      assert game.status == "some status"
-      assert game.title == "some title"
+      assert game.status == :backlog
+      assert game.catalog_game_id == catalog_game.id
     end
 
     test "create_game/1 with invalid data returns error changeset" do
@@ -38,15 +43,15 @@ defmodule GameBacklog.BacklogTest do
 
     test "update_game/2 with valid data updates the game" do
       game = game_fixture()
-      update_attrs = %{genre: "some updated genre", notes: "some updated notes", platform: "some updated platform", rating: 43, status: "some updated status", title: "some updated title"}
+
+      update_attrs = %{
+        notes: "some updated notes",
+        platform: "some updated platform"
+      }
 
       assert {:ok, %Game{} = game} = Backlog.update_game(game, update_attrs)
-      assert game.genre == "some updated genre"
       assert game.notes == "some updated notes"
       assert game.platform == "some updated platform"
-      assert game.rating == 43
-      assert game.status == "some updated status"
-      assert game.title == "some updated title"
     end
 
     test "update_game/2 with invalid data returns error changeset" do

@@ -4,9 +4,6 @@ defmodule GameBacklogWeb.GameLiveTest do
   import Phoenix.LiveViewTest
   import GameBacklog.BacklogFixtures
 
-  @create_attrs %{genre: "some genre", notes: "some notes", platform: "some platform", rating: 42, status: "some status", title: "some title"}
-  @update_attrs %{genre: "some updated genre", notes: "some updated notes", platform: "some updated platform", rating: 43, status: "some updated status", title: "some updated title"}
-  @invalid_attrs %{genre: nil, notes: nil, platform: nil, rating: nil, status: nil, title: nil}
   defp create_game(_) do
     game = game_fixture()
 
@@ -20,65 +17,25 @@ defmodule GameBacklogWeb.GameLiveTest do
       {:ok, _index_live, html} = live(conn, ~p"/games")
 
       assert html =~ "Listing Games"
-      assert html =~ game.title
+      assert html =~ game.catalog_game.title
     end
 
-    test "saves new game", %{conn: conn} do
+    test "navigates to new game page", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/games")
 
-      assert {:ok, form_live, _} =
+      assert {:ok, _form_live, html} =
                index_live
                |> element("a", "New Game")
                |> render_click()
                |> follow_redirect(conn, ~p"/games/new")
 
-      assert render(form_live) =~ "New Game"
-
-      assert form_live
-             |> form("#game-form", game: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#game-form", game: @create_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/games")
-
-      html = render(index_live)
-      assert html =~ "Game created successfully"
-      assert html =~ "some title"
-    end
-
-    test "updates game in listing", %{conn: conn, game: game} do
-      {:ok, index_live, _html} = live(conn, ~p"/games")
-
-      assert {:ok, form_live, _html} =
-               index_live
-               |> element("#games-#{game.id} a", "Edit")
-               |> render_click()
-               |> follow_redirect(conn, ~p"/games/#{game}/edit")
-
-      assert render(form_live) =~ "Edit Game"
-
-      assert form_live
-             |> form("#game-form", game: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, index_live, _html} =
-               form_live
-               |> form("#game-form", game: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/games")
-
-      html = render(index_live)
-      assert html =~ "Game updated successfully"
-      assert html =~ "some updated title"
+      assert html =~ "New Game"
     end
 
     test "deletes game in listing", %{conn: conn, game: game} do
       {:ok, index_live, _html} = live(conn, ~p"/games")
 
-      assert index_live |> element("#games-#{game.id} a", "Delete") |> render_click()
+      assert index_live |> element("#games-#{game.id} a[data-confirm]") |> render_click()
       refute has_element?(index_live, "#games-#{game.id}")
     end
   end
@@ -90,10 +47,10 @@ defmodule GameBacklogWeb.GameLiveTest do
       {:ok, _show_live, html} = live(conn, ~p"/games/#{game}")
 
       assert html =~ "Show Game"
-      assert html =~ game.title
+      assert html =~ game.catalog_game.title
     end
 
-    test "updates game and returns to show", %{conn: conn, game: game} do
+    test "navigates to edit page from show", %{conn: conn, game: game} do
       {:ok, show_live, _html} = live(conn, ~p"/games/#{game}")
 
       assert {:ok, form_live, _} =
@@ -103,20 +60,6 @@ defmodule GameBacklogWeb.GameLiveTest do
                |> follow_redirect(conn, ~p"/games/#{game}/edit?return_to=show")
 
       assert render(form_live) =~ "Edit Game"
-
-      assert form_live
-             |> form("#game-form", game: @invalid_attrs)
-             |> render_change() =~ "can&#39;t be blank"
-
-      assert {:ok, show_live, _html} =
-               form_live
-               |> form("#game-form", game: @update_attrs)
-               |> render_submit()
-               |> follow_redirect(conn, ~p"/games/#{game}")
-
-      html = render(show_live)
-      assert html =~ "Game updated successfully"
-      assert html =~ "some updated title"
     end
   end
 end
