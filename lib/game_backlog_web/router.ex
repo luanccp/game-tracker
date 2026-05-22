@@ -23,6 +23,8 @@ defmodule GameBacklogWeb.Router do
     live "/games/new", GameLive.Form, :new
     live "/games/:id", GameLive.Show, :show
     live "/games/:id/edit", GameLive.Form, :edit
+
+    live "/leaderboard", LeaderboardLive, :index
   end
 
   scope "/api", GameBacklogWeb do

@@ -26,6 +26,7 @@ defmodule GameBacklogWeb.GameLive.Show do
         <:item title="Status">{@game.status}</:item>
         <:item title="Genre">{@game.genre && @game.genre.description}</:item>
         <:item title="Rating">{@game.rating}</:item>
+        <:item title="Views">{@view_count}</:item>
         <:item title="Notes">{@game.notes}</:item>
       </.list>
     </Layouts.app>
@@ -34,9 +35,16 @@ defmodule GameBacklogWeb.GameLive.Show do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
+    game = Backlog.get_game!(id)
+
+    if connected?(socket) do
+      GameBacklog.Leaderboard.record_view(game.id)
+    end
+
     {:ok,
      socket
      |> assign(:page_title, "Show Game")
-     |> assign(:game, Backlog.get_game!(id))}
+     |> assign(:game, game)
+     |> assign(:view_count, game.view_count)}
   end
 end

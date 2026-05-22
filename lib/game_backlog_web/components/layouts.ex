@@ -40,6 +40,11 @@ defmodule GameBacklogWeb.Layouts do
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
+            <.link navigate="/leaderboard" class="btn btn-ghost">
+              <.icon name="hero-trophy" class="w-4 h-4" /> Leaderboard
+            </.link>
+          </li>
+          <li>
             <a href="https://github.com/luanccp/game-tracker" class="btn btn-ghost">GitHub</a>
           </li>
           <li>

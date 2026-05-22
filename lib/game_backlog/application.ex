@@ -12,9 +12,7 @@ defmodule GameBacklog.Application do
       GameBacklog.Repo,
       {DNSCluster, query: Application.get_env(:game_backlog, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: GameBacklog.PubSub},
-      # Start a worker by calling: GameBacklog.Worker.start_link(arg)
-      # {GameBacklog.Worker, arg},
-      # Start to serve requests, typically the last entry
+      GameBacklog.Leaderboard,
       GameBacklogWeb.Endpoint
     ]
 

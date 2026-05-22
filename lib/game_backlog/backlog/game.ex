@@ -9,6 +9,7 @@ defmodule GameBacklog.Backlog.Game do
     belongs_to :genre, GameBacklog.Backlog.Genre
     field :rating, :integer
     field :notes, :string
+    field :view_count, :integer, default: 0
 
     timestamps(type: :utc_datetime)
   end
