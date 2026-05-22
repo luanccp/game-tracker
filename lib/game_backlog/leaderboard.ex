@@ -3,6 +3,7 @@ defmodule GameBacklog.Leaderboard do
 
   import Ecto.Query
   alias GameBacklog.Repo
+  alias GameBacklog.Backlog.CatalogGame
   alias GameBacklog.Backlog.Game
 
   @persist_interval :timer.minutes(5)
@@ -15,12 +16,28 @@ defmodule GameBacklog.Leaderboard do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def record_view(game_id) do
-    GenServer.cast(__MODULE__, {:record_view, game_id})
+  def record_view(catalog_game_id) do
+    GenServer.cast(__MODULE__, {:record_view, catalog_game_id})
   end
 
-  def top_games(limit \\ 10) do
-    GenServer.call(__MODULE__, {:top_games, limit})
+  def top_viewed(limit \\ 10) do
+    GenServer.call(__MODULE__, {:top_viewed, limit})
+  end
+
+  def most_played(limit \\ 10) do
+    Repo.all(
+      from g in Game,
+        where: g.status in [:playing, :completed],
+        join: cg in assoc(g, :catalog_game),
+        group_by: cg.id,
+        select: %{catalog_game_id: cg.id, count: count(g.id)},
+        order_by: [desc: count(g.id)],
+        limit: ^limit
+    )
+    |> Enum.map(fn %{catalog_game_id: id, count: count} ->
+      catalog_game = Repo.get!(CatalogGame, id) |> Repo.preload(:genre)
+      %{catalog_game: catalog_game, play_count: count}
+    end)
   end
 
   def reset do
@@ -41,8 +58,8 @@ defmodule GameBacklog.Leaderboard do
   end
 
   @impl true
-  def handle_cast({:record_view, game_id}, state) do
-    counts = Map.update(state.counts, game_id, 1, &(&1 + 1))
+  def handle_cast({:record_view, catalog_game_id}, state) do
+    counts = Map.update(state.counts, catalog_game_id, 1, &(&1 + 1))
     broadcast_update(counts)
     {:noreply, %{state | counts: counts}}
   end
@@ -54,8 +71,8 @@ defmodule GameBacklog.Leaderboard do
   end
 
   @impl true
-  def handle_call({:top_games, limit}, _from, state) do
-    top = build_top_games(state.counts, limit)
+  def handle_call({:top_viewed, limit}, _from, state) do
+    top = build_top_viewed(state.counts, limit)
     {:reply, top, state}
   end
 
@@ -69,48 +86,47 @@ defmodule GameBacklog.Leaderboard do
   # --- Private helpers ---
 
   defp load_counts_from_db do
-    Repo.all(from g in Game, where: g.view_count > 0, select: {g.id, g.view_count})
+    Repo.all(from cg in CatalogGame, where: cg.view_count > 0, select: {cg.id, cg.view_count})
     |> Map.new()
   end
 
   defp persist_counts(counts) when map_size(counts) == 0, do: :ok
 
   defp persist_counts(counts) do
-    Enum.each(counts, fn {game_id, count} ->
+    Enum.each(counts, fn {catalog_game_id, count} ->
       Repo.update_all(
-        from(g in Game, where: g.id == ^game_id),
+        from(cg in CatalogGame, where: cg.id == ^catalog_game_id),
         set: [view_count: count]
       )
     end)
   end
 
   defp reset_counts_in_db do
-    Repo.update_all(Game, set: [view_count: 0])
+    Repo.update_all(CatalogGame, set: [view_count: 0])
   end
 
-  defp build_top_games(counts, limit) do
-    game_ids =
+  defp build_top_viewed(counts, limit) do
+    catalog_game_ids =
       counts
       |> Enum.sort_by(fn {_id, count} -> count end, :desc)
       |> Enum.take(limit)
       |> Enum.map(fn {id, _count} -> id end)
 
-    games =
-      Repo.all(from g in Game, where: g.id in ^game_ids, preload: [catalog_game: [:genre]])
+    catalog_games =
+      Repo.all(from cg in CatalogGame, where: cg.id in ^catalog_game_ids, preload: [:genre])
       |> Map.new(&{&1.id, &1})
 
     counts
     |> Enum.sort_by(fn {_id, count} -> count end, :desc)
     |> Enum.take(limit)
     |> Enum.map(fn {id, count} ->
-      game = Map.get(games, id)
-      %{game: game, view_count: count}
+      %{catalog_game: Map.get(catalog_games, id), view_count: count}
     end)
-    |> Enum.filter(fn %{game: game} -> game != nil end)
+    |> Enum.filter(fn %{catalog_game: cg} -> cg != nil end)
   end
 
   defp broadcast_update(counts) do
-    top = build_top_games(counts, 10)
+    top = build_top_viewed(counts, 10)
     Phoenix.PubSub.broadcast(@pubsub, @topic, {:leaderboard_updated, top})
   end
 

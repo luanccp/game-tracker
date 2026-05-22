@@ -8,7 +8,6 @@ defmodule GameBacklog.Backlog.Game do
     field :status, Ecto.Enum, values: [:backlog, :playing, :completed, :dropped]
     field :rating, :integer
     field :notes, :string
-    field :view_count, :integer, default: 0
 
     timestamps(type: :utc_datetime)
   end

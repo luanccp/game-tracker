@@ -6,6 +6,7 @@ defmodule GameBacklog.Backlog.CatalogGame do
     field :title, :string
     field :description, :string
     field :image_url, :string
+    field :view_count, :integer, default: 0
     belongs_to :genre, GameBacklog.Backlog.Genre
 
     timestamps(type: :utc_datetime)
