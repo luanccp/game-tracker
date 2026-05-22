@@ -10,46 +10,46 @@ defmodule GameBacklogWeb.GameLive.Form do
     <Layouts.app flash={@flash}>
       <.header>
         {@page_title}
-        <:subtitle>Use this form to manage game records in your database.</:subtitle>
       </.header>
 
       <.form for={@form} id="game-form" phx-change="validate" phx-submit="save">
         <div class="relative">
-          <label class="block text-sm font-semibold leading-6 text-base-content" for="catalog-search">
-            Game
-          </label>
-          <%= if @selected_catalog_game do %>
-            <div class="flex items-center gap-3 mt-2 p-3 rounded-lg border border-base-300 bg-base-200">
-              <%= if @selected_catalog_game.image_url do %>
-                <img
-                  src={@selected_catalog_game.image_url}
-                  alt={@selected_catalog_game.title}
-                  class="w-12 h-12 rounded object-cover"
-                />
-              <% end %>
-              <div class="flex-1">
-                <p class="font-semibold">{@selected_catalog_game.title}</p>
-                <p class="text-sm text-base-content/60">
-                  {if @selected_catalog_game.genre, do: @selected_catalog_game.genre.description}
-                </p>
+          <div class="fieldset mb-2">
+            <label for="catalog-search">
+              <span class="label mb-1">Game</span>
+            </label>
+            <%= if @selected_catalog_game do %>
+              <div class="flex items-center gap-3 p-3 rounded-lg border border-base-300 bg-base-200">
+                <%= if @selected_catalog_game.image_url do %>
+                  <img
+                    src={@selected_catalog_game.image_url}
+                    alt={@selected_catalog_game.title}
+                    class="w-12 h-12 rounded object-cover"
+                  />
+                <% end %>
+                <div class="flex-1">
+                  <p class="font-semibold">{@selected_catalog_game.title}</p>
+                  <p class="text-sm text-base-content/60">
+                    {if @selected_catalog_game.genre, do: @selected_catalog_game.genre.description}
+                  </p>
+                </div>
+                <button type="button" phx-click="clear_catalog_game" class="btn btn-ghost btn-sm">
+                  <.icon name="hero-x-mark" class="w-4 h-4" />
+                </button>
               </div>
-              <button type="button" phx-click="clear_catalog_game" class="btn btn-ghost btn-sm">
-                <.icon name="hero-x-mark" class="w-4 h-4" />
-              </button>
-            </div>
-            <input type="hidden" name="game[catalog_game_id]" value={@selected_catalog_game.id} />
-          <% else %>
-            <input
-              type="text"
-              id="catalog-search"
-              name="search_query"
-              value={@search_query}
-              placeholder="Search for a game..."
-              phx-change="search_catalog"
-              phx-debounce="300"
-              autocomplete="off"
-              class="mt-2 block w-full rounded-lg text-base-content focus:ring-0 sm:text-sm sm:leading-6 border-base-content/30 bg-base-100 focus:border-primary"
-            />
+              <input type="hidden" name="game[catalog_game_id]" value={@selected_catalog_game.id} />
+            <% else %>
+              <input
+                type="text"
+                id="catalog-search"
+                name="search_query"
+                value={@search_query}
+                placeholder="Search for a game..."
+                phx-change="search_catalog"
+                phx-debounce="300"
+                autocomplete="off"
+                class="w-full input"
+              />
             <%= if @catalog_results != [] do %>
               <ul class="absolute z-10 mt-1 w-full rounded-lg border border-base-300 bg-base-100 shadow-lg max-h-60 overflow-auto">
                 <%= for game <- @catalog_results do %>
@@ -80,13 +80,21 @@ defmodule GameBacklogWeb.GameLive.Form do
               </ul>
             <% end %>
           <% end %>
+          </div>
         </div>
 
-        <.input field={@form[:platform]} type="text" label="Platform" />
+        <.input
+          field={@form[:platform]}
+          type="select"
+          label="Platform"
+          prompt="Select a platform"
+          options={["PC", "PlayStation", "Xbox", "Nintendo"]}
+        />
         <.input
           field={@form[:status]}
           type="select"
           label="Status"
+          prompt="Select your status"
           options={
             Ecto.Enum.values(GameBacklog.Backlog.Game, :status)
             |> Enum.map(&{Phoenix.Naming.humanize(&1), &1})
