@@ -8,6 +8,7 @@ defmodule GameBacklog.Backlog do
 
   alias GameBacklog.Backlog.Game
   alias GameBacklog.Backlog.Genre
+  alias GameBacklog.Backlog.CatalogGame
 
   @doc """
   Returns the list of games.
@@ -19,7 +20,7 @@ defmodule GameBacklog.Backlog do
 
   """
   def list_games do
-    Repo.all(from g in Game, preload: [:genre])
+    Repo.all(from g in Game, preload: [catalog_game: [:genre]])
   end
 
   @doc """
@@ -36,7 +37,7 @@ defmodule GameBacklog.Backlog do
       ** (Ecto.NoResultsError)
 
   """
-  def get_game!(id), do: Repo.get!(Game, id) |> Repo.preload(:genre)
+  def get_game!(id), do: Repo.get!(Game, id) |> Repo.preload(catalog_game: [:genre])
 
   @doc """
   Creates a game.
@@ -127,5 +128,36 @@ defmodule GameBacklog.Backlog do
       nil -> create_genre(%{description: description})
       genre -> {:ok, genre}
     end
+  end
+
+  @doc """
+  Searches catalog games by title.
+  """
+  def search_catalog_games(query) when is_binary(query) and byte_size(query) > 0 do
+    search = "%#{query}%"
+
+    Repo.all(
+      from cg in CatalogGame,
+        where: ilike(cg.title, ^search),
+        order_by: cg.title,
+        limit: 10,
+        preload: [:genre]
+    )
+  end
+
+  def search_catalog_games(_query), do: []
+
+  @doc """
+  Gets a single catalog game.
+  """
+  def get_catalog_game!(id), do: Repo.get!(CatalogGame, id) |> Repo.preload(:genre)
+
+  @doc """
+  Creates a catalog game.
+  """
+  def create_catalog_game(attrs) do
+    %CatalogGame{}
+    |> CatalogGame.changeset(attrs)
+    |> Repo.insert()
   end
 end

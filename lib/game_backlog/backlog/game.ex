@@ -3,10 +3,9 @@ defmodule GameBacklog.Backlog.Game do
   import Ecto.Changeset
 
   schema "games" do
-    field :title, :string
+    belongs_to :catalog_game, GameBacklog.Backlog.CatalogGame
     field :platform, :string
     field :status, Ecto.Enum, values: [:backlog, :playing, :completed, :dropped]
-    belongs_to :genre, GameBacklog.Backlog.Genre
     field :rating, :integer
     field :notes, :string
     field :view_count, :integer, default: 0
@@ -17,8 +16,8 @@ defmodule GameBacklog.Backlog.Game do
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:title, :platform, :status, :genre_id, :rating, :notes])
-    |> validate_required([:title, :platform, :status, :genre_id])
+    |> cast(attrs, [:catalog_game_id, :platform, :status, :rating, :notes])
+    |> validate_required([:catalog_game_id, :platform, :status])
     |> validate_rating()
   end
 
